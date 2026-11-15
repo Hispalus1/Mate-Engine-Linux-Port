@@ -36,11 +36,8 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 const INTERFACE = `
 <node>
   <interface name="org.mateengine.Pointer">
-    <method name="Get">
-      <arg type="i" direction="out" name="x"/>
-      <arg type="i" direction="out" name="y"/>
-      <arg type="i" direction="out" name="width"/>
-      <arg type="i" direction="out" name="height"/>
+    <method name="GetPointer">
+      <arg type="s" direction="out" name="pointer"/>
     </method>
   </interface>
 </node>`;
@@ -56,10 +53,10 @@ export default class MateEnginePointerExtension extends Extension {
         this._dbus = null;
     }
 
-    // Pointer position and the size of the whole desktop, in stage coordinates.
-    Get() {
+    // Pointer position and the size of the whole desktop, in stage coordinates, as "x,y,width,height".
+    GetPointer() {
         const [x, y] = global.get_pointer();
-        return [Math.round(x), Math.round(y), Math.round(global.stage.width), Math.round(global.stage.height)];
+        return [x, y, global.stage.width, global.stage.height].map(Math.round).join(',');
     }
 }
 JS

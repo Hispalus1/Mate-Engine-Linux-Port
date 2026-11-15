@@ -178,3 +178,7 @@ Assets/AddressableAssetsData/link.xml.meta
 
 # Analysis & Local Tools
 graphify-out/
+
+# Unity crash-recovery scenes
+Assets/_Recovery/
+Assets/_Recovery.meta

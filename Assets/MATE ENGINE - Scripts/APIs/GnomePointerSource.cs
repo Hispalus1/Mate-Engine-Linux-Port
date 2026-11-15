@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Tmds.DBus;
@@ -8,10 +9,12 @@ using Debug = UnityEngine.Debug;
 
 /// <summary>D-Bus interface exported by the "MateEngine Pointer" GNOME Shell extension (see gnome-pointer-extension.sh).</summary>
 [DBusInterface("org.mateengine.Pointer")]
-internal interface IGnomePointer : IDBusObject
+public interface IGnomePointer : IDBusObject
 {
-    /// <summary>Pointer position and size of the whole desktop, both in the compositor's coordinates.</summary>
-    Task<(int x, int y, int width, int height)> GetAsync();
+    /// <summary>Pointer position and size of the whole desktop, in the compositor's coordinates, as "x,y,width,height".</summary>
+    // Not named "Get": Tmds.DBus reserves GetAsync/SetAsync/GetAllAsync for D-Bus properties and rejects the proxy.
+    // A plain string instead of four ints: emitting a proxy that returns a ValueTuple crashes Unity's Mono (SIGSEGV).
+    Task<string> GetPointerAsync();
 }
 
 /// <summary>
@@ -75,7 +78,13 @@ public sealed class GnomePointerSource : IDisposable
             int delay = PollMilliseconds;
             try
             {
-                var (x, y, width, height) = await _proxy.GetAsync().ConfigureAwait(false);
+                string reply = await _proxy.GetPointerAsync().ConfigureAwait(false);
+                string[] parts = reply.Split(',');
+                if (parts.Length != 4) throw new FormatException("Unexpected pointer reply: " + reply);
+                int x = int.Parse(parts[0], CultureInfo.InvariantCulture);
+                int y = int.Parse(parts[1], CultureInfo.InvariantCulture);
+                int width = int.Parse(parts[2], CultureInfo.InvariantCulture);
+                int height = int.Parse(parts[3], CultureInfo.InvariantCulture);
                 lock (_lock)
                 {
                     _position = new Vector2Int(x, y);

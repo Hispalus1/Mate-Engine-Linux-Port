@@ -29,7 +29,13 @@ public abstract class PostBuildCopy
             
             scriptDestination = Path.Combine(buildDir, "..", "install.sh");
             
-            if (File.Exists(installerScript))
+            // Building into a folder directly under the project (e.g. BuildOutput/) makes the destination
+            // the source itself; copying a file onto itself truncates it to 0 bytes.
+            if (Path.GetFullPath(scriptDestination) == Path.GetFullPath(installerScript))
+            {
+                Debug.Log("install.sh is already next to the build folder.");
+            }
+            else if (File.Exists(installerScript))
             {
                 File.Copy(installerScript, scriptDestination, true);
                 Debug.Log("Copied install.sh outside the build folder.");

@@ -40,6 +40,7 @@ else
 fi
 
 cd "$TARGET_DIR" || exit 1
-SDL_VIDEO_X11_VISUALID=$visual_id "./MateEngineX.$(uname -m)" "$@" | grep -vF --line-buffered "[Vulkan init] extensions: "
+# -logFile - sends the full Unity player log to the terminal instead of only Player.log
+SDL_VIDEO_X11_VISUALID=$visual_id "./MateEngineX.$(uname -m)" -logFile - "$@" | grep -vF --line-buffered "[Vulkan init] extensions: "
 
 echo "\`\`\`"
